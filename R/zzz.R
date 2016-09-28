@@ -2,7 +2,7 @@
   op <- options()
   op_covr <- list(
     covr.gcov = Sys.which("gcov"),
-    covr.gcov_args = NULL,
+    covr.gcov_args = c("-p", "-l"),
     covr.exclude_pattern = rex::rex("#", any_spaces, "nocov"),
     covr.exclude_start = rex::rex("#", any_spaces, "nocov", any_spaces, "start"),
     covr.exclude_end = rex::rex("#", any_spaces, "nocov", any_spaces, "end"),

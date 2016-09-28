@@ -293,6 +293,18 @@ normalize_path <- function(x) {
   sub("/*$", "", path)
 }
 
+is_unc <- function(x) {
+  is_windows() & grepl(rex::rex(start, n(one_of("/", "\\"), 2)), x)
+}
+
+is_absolute_path <- function(x) {
+  if (is_windows()) {
+    is_unc(x) | grepl(rex::rex(start, alpha, ":"), x)
+  } else {
+    grepl(rex::rex(start, or("/", "~")), x)
+  }
+}
+
 temp_dir <- function() {
   normalize_path(tempdir())
 }

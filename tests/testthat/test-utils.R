@@ -28,3 +28,26 @@ test_that("it works as expected", {
   expect_equal(current_commit("TestSummary"), "test_hash")
   })
 })
+
+context("is_absolute_path")
+test_that("it works on windows paths", {
+  with_mock(`covr:::is_windows` = function() TRUE, {
+      expect_true(is_absolute_path("//host/computer/dir"))
+      expect_true(is_absolute_path("C:/dir"))
+      expect_true(is_absolute_path("z:/dir"))
+      expect_true(is_absolute_path("\\\\host\\computer\\dir"))
+      expect_true(is_absolute_path("C:\\dir"))
+      expect_true(is_absolute_path("z:\\dir"))
+      expect_false(is_absolute_path("dir"))
+    })
+})
+test_that("it works on unix paths", {
+  with_mock(`covr:::is_windows` = function() FALSE, {
+      expect_true(is_absolute_path("/dir"))
+      expect_true(is_absolute_path("~dir"))
+      expect_true(is_absolute_path("~/dir"))
+      expect_false(is_absolute_path("C:/dir"))
+      expect_false(is_absolute_path("z:/dir"))
+      expect_false(is_absolute_path("dir"))
+    })
+})

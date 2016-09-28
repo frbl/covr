@@ -1,5 +1,5 @@
 # this does not handle LCOV_EXCL_START ect.
-parse_gcov <- function(file, package_path = "") {
+parse_gcov <- function(file, path = ".") {
   if (!file.exists(file)) {
     return(NULL)
   }
@@ -7,11 +7,16 @@ parse_gcov <- function(file, package_path = "") {
   lines <- readLines(file)
   source_file <- rex::re_matches(lines[1], rex::rex("Source:", capture(name = "source", anything)))$source
 
-  # retrieve full path to the source files
-  source_file <- normalize_path(source_file)
+  # If the source file starts with a absolute path ignore it
+  if (is_absolute_path(source_file)) {
+    return(NULL)
+  }
 
-  # If the source file does not start with the package path ignore it.
-  if (!grepl(rex::rex(start, package_path), source_file)) {
+  # retrieve full path to the source files
+  source_file <- normalize_path(file.path(path, source_file))
+
+  if (!file.exists(source_file)) {
+    message(source_file, " does not exist!", call. = FALSE)
     return(NULL)
   }
 
@@ -84,18 +89,17 @@ run_gcov <- function(path, quiet = TRUE,
      return()
   }
 
-  gcov_inputs <- list.files(path, pattern = rex::rex(".gcno", end), recursive = TRUE, full.names = TRUE)
-  withr::with_dir(src_path, {
-    run_gcov <- function(src) {
-      system_check(gcov_path,
-        args = c(gcov_args, src, "-o", dirname(src[[1]])),
-        quiet = quiet, echo = !quiet)
-    }
-    tapply(gcov_inputs, dirname(gcov_inputs), run_gcov)
-    gcov_outputs <- list.files(path, pattern = rex::rex(".gcov", end), recursive = TRUE, full.names = TRUE)
-    structure(
-      unlist(recursive = FALSE,
-        lapply(gcov_outputs, parse_gcov, package_path = path)),
-      class = "coverage")
-  })
+  res <- unlist(recursive = FALSE,
+    lapply(list.dirs(src_path, recursive = TRUE),
+    function(dir) {
+      withr::with_dir(dir, {
+        gcov_inputs <- list.files(dir, pattern = rex::rex(".gcno", end), recursive = TRUE, full.names = TRUE)
+        if (length(gcov_inputs) > 0) {
+          system_check(gcov_path, args = c(gcov_args, gcov_inputs), quiet = quiet, echo = !quiet)
+          gcov_outputs <- list.files(dir, pattern = rex::rex(".gcov", end), recursive = TRUE, full.names = TRUE)
+          unlist(recursive = FALSE, lapply(gcov_outputs, parse_gcov, path = dir))
+      }
+  })}))
+
+  structure(res, class = "coverage")
 }
