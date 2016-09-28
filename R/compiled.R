@@ -1,6 +1,5 @@
 # this does not handle LCOV_EXCL_START ect.
 parse_gcov <- function(file, path = ".") {
-  str(paste0("parsing", file, " path: ", path))
   if (!file.exists(file)) {
     return(NULL)
   }
@@ -14,12 +13,21 @@ parse_gcov <- function(file, path = ".") {
   }
 
   # retrieve full path to the source files
-  source_file <- normalize_path(file.path(path, source_file))
+  file <- normalize_path(file.path(path, source_file))
 
-  if (!file.exists(source_file)) {
-    str(paste0(source_file, " does not exist!"))
-    return(NULL)
+  if (!file.exists(file)) {
+    is_root <- function(path) {
+      identical(path, dirname(path))
+    }
+    while(!is_root(path) && !file.exists(file)) {
+      path <- dirname(path)
+      file <- normalize_path(file.path(path, source_file))
+    }
+    if (!file.exists(file)) {
+      return(NULL)
+    }
   }
+  source_file <- file
 
   re <- rex::rex(any_spaces,
     capture(name = "coverage", some_of(digit, "-", "#", "=")),
@@ -98,7 +106,6 @@ run_gcov <- function(path, quiet = TRUE,
         if (length(gcov_inputs) > 0) {
           system_check(gcov_path, args = c(gcov_args, gcov_inputs), quiet = quiet, echo = !quiet)
           gcov_outputs <- list.files(dir, pattern = rex::rex(".gcov", end), recursive = TRUE, full.names = TRUE)
-          str(gcov_outputs)
           unlist(recursive = FALSE, lapply(gcov_outputs, parse_gcov, path = dir))
       }
   })}))
