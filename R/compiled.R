@@ -96,7 +96,7 @@ run_gcov <- function(path, quiet = TRUE,
       withr::with_dir(dir, {
         gcov_inputs <- list.files(dir, pattern = rex::rex(".gcno", end), recursive = TRUE, full.names = TRUE)
         if (length(gcov_inputs) > 0) {
-          system_check(gcov_path, args = c(gcov_args, gcov_inputs, "-o", dir), quiet = quiet, echo = !quiet)
+          system_check(gcov_path, args = c(gcov_args, gcov_inputs), quiet = quiet, echo = !quiet)
           gcov_outputs <- list.files(dir, pattern = rex::rex(".gcov", end), recursive = TRUE, full.names = TRUE)
           str(gcov_outputs)
           unlist(recursive = FALSE, lapply(gcov_outputs, parse_gcov, path = dir))
