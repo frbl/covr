@@ -16,7 +16,6 @@ parse_gcov <- function(file, path = ".") {
   source_file <- normalize_path(file.path(path, source_file))
 
   if (!file.exists(source_file)) {
-    message(source_file, " does not exist!", call. = FALSE)
     return(NULL)
   }
 
@@ -95,7 +94,7 @@ run_gcov <- function(path, quiet = TRUE,
       withr::with_dir(dir, {
         gcov_inputs <- list.files(dir, pattern = rex::rex(".gcno", end), recursive = TRUE, full.names = TRUE)
         if (length(gcov_inputs) > 0) {
-          system_check(gcov_path, args = c(gcov_args, gcov_inputs), quiet = quiet, echo = !quiet)
+          system_check(gcov_path, args = c(gcov_args, gcov_inputs, "-o", dir), quiet = quiet, echo = !quiet)
           gcov_outputs <- list.files(dir, pattern = rex::rex(".gcov", end), recursive = TRUE, full.names = TRUE)
           unlist(recursive = FALSE, lapply(gcov_outputs, parse_gcov, path = dir))
       }
