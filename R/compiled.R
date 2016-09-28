@@ -1,6 +1,6 @@
 # this does not handle LCOV_EXCL_START ect.
 parse_gcov <- function(file, path = ".") {
-  str("parsing", file, " path: ", path)
+  str(paste0("parsing", file, " path: ", path))
   if (!file.exists(file)) {
     return(NULL)
   }
@@ -17,7 +17,7 @@ parse_gcov <- function(file, path = ".") {
   source_file <- normalize_path(file.path(path, source_file))
 
   if (!file.exists(source_file)) {
-    str(source_file, " does not exist!")
+    str(paste0(source_file, " does not exist!"))
     return(NULL)
   }
 
