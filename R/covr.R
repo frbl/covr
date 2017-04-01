@@ -331,11 +331,6 @@ merge_coverage <- function(...) {
   x <- objs[[1]]
   others <- objs[-1]
 
-  if (getRversion() < "3.2.0") {
-    lengths <- function(x, ...) vapply(x, length, integer(1L))
-  }
-  stopifnot(all(lengths(others) == length(x)))
-
   for (y in others) {
     for (i in seq_along(x)) {
       x[[i]]$value <- x[[i]]$value + y[[i]]$value
